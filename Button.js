@@ -63,3 +63,7 @@ Button.prototype.draw=function(context){
 Button.prototype.resetState=function(){
 	this.state=false;
 }
+
+Button.prototype.activateState=function(){
+	this.state=true;
+}

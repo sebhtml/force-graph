@@ -60,11 +60,19 @@ function Screen(){
 	this.canvas.addEventListener("mouseup",handleMouseUp,false);
 	this.canvas.addEventListener("mousemove",handleMouseMove,false);
 
+
+	this.createButtons();
+
+	this.start();
+}
+
+Screen.prototype.createButtons=function(){
 	this.buttons=new Array();
 
 	this.timeControlButton=new Button(30,35,40,50,"time",true);
 	this.buttons.push(this.timeControlButton);
 	
+
 	this.repulsionBase=280;
 	this.attractionBase=180;
 	this.typeBase=470;
@@ -73,14 +81,14 @@ function Screen(){
 	this.degreeBase=640;
 	this.dampingBase=380;
 	this.radiusBase=720;
-	this.arcBase=840;
+	this.arcBase=830;
 
 	var smallButtonWidth=20;
 
-	this.showArcsButton=new Button(140,20,60,20,"arcs",true);
+	this.showArcsButton=new Button(140,50,60,20,"edges",true);
 	this.buttons.push(this.showArcsButton);
 
-	this.showVerticesButton=new Button(140,50,60,20,"vertices",true);
+	this.showVerticesButton=new Button(140,20,60,20,"vertices",true);
 	this.buttons.push(this.showVerticesButton);
 
 	this.increaseRepulsionButton=new Button(this.repulsionBase+40,45,smallButtonWidth,smallButtonWidth,"+",false);
@@ -128,12 +136,25 @@ function Screen(){
 	this.decreaseRadiusButton=new Button(this.radiusBase+20,45,smallButtonWidth,smallButtonWidth,"-",false);
 	this.buttons.push(this.decreaseRadiusButton);
 
+	this.addVertexButton=new Button(950+40,25,100,smallButtonWidth,"add vertex",false);
+	this.buttons.push(this.addVertexButton);
 
-	this.lastUpdate=0;
-	this.start();
+	this.removeVertexButton=new Button(950+40,55,100,smallButtonWidth,"remove vertex",false);
+	this.buttons.push(this.removeVertexButton);
+
+
+	this.addArcButton=new Button(1070+40,25,100,smallButtonWidth,"add edge",false);
+	this.buttons.push(this.addArcButton);
+
+	this.removeArcButton=new Button(1070+40,55,100,smallButtonWidth,"remove edge",false);
+	this.buttons.push(this.removeArcButton);
 }
 
 Screen.prototype.start=function(){
+	
+	this.vertexSelected=null;
+	this.lastUpdate=0;
+	this.identifier=0;
 
 	this.moveOrigin=false;
 
@@ -171,16 +192,100 @@ Screen.prototype.handleMouseDown=function(eventObject){
 	var position=this.getMousePosition(eventObject);
 
 	for(i in this.buttons){
-		if(this.buttons[i].handleMouseDown(position[0],position[1])){
+		var candidate=this.buttons[i];
+		if(candidate.handleMouseDown(position[0],position[1])){
+
+		
+			this.vertexSelected=null;
+
+			// only one of them can be active
+			if(candidate.getState()){
+				this.addArcButton.resetState();
+				this.addVertexButton.resetState();
+				this.removeArcButton.resetState();
+				this.removeVertexButton.resetState();
+				candidate.activateState();
+			}
 
 			this.processButtons();
+
 			return;
 		}
 	}
 
+	if(this.addVertexButton.getState()){
+		var vertex=new Vertex(position[0],position[1],this.identifier);
+		this.vertices.push(vertex);
+
+		this.identifier++;
+		return;
+	}
+
+	if(this.removeVertexButton.getState()){
+		for(i in this.vertices){
+			var vertexToCheck=this.vertices[i];
+			if(vertexToCheck.isInside(position[0]+this.originX,position[1]+this.originY,this.vertexRadius)){
+
+				var newTable=new Array();
+
+				for(j in this.vertices){
+					if(vertexToCheck.getName()!=this.vertices[j].getName()){
+						newTable.push(this.vertices[j]);
+					}
+				}
+
+				this.vertices=newTable;
+
+				for(j in this.vertices){
+					this.vertices[j].removeArc(vertexToCheck);
+				}
+
+				return;
+			}
+		}
+	}
+
+
+	if(this.addArcButton.getState()){
+		for(i in this.vertices){
+			if(this.vertices[i].isInside(position[0]+this.originX,position[1]+this.originY,this.vertexRadius)){
+				if(this.vertexSelected==null){
+					this.vertexSelected=i;
+				}else{
+					if(i!=this.vertexSelected){
+						this.createArcs(this.vertices[i],this.vertices[this.vertexSelected]);
+					}
+					this.vertexSelected=null;
+				}
+
+				return;
+			}
+		}
+	}
+
+	if(this.removeArcButton.getState()){
+		for(i in this.vertices){
+			var vertexToCheck=this.vertices[i];
+			if(vertexToCheck.isInside(position[0]+this.originX,position[1]+this.originY,this.vertexRadius)){
+				if(this.vertexSelected==null){
+					this.vertexSelected=i;
+				}else{
+					if(i!=this.vertexSelected){
+						var otherVertex=this.vertices[this.vertexSelected];
+						vertexToCheck.removeArc(otherVertex);
+						otherVertex.removeArc(vertexToCheck);
+					}
+					this.vertexSelected=null;
+				}
+
+				return;
+			}
+		}
+	}
+
+
 	for(i in this.vertices){
 		if(this.vertices[i].handleMouseDown(position[0]+this.originX,position[1]+this.originY,this.vertexRadius)){
-			//eventObject.target.style.cursor="pointer";
 			return;
 		}
 	}
@@ -234,7 +339,6 @@ Screen.prototype.printGraph=function(){
 
 Screen.prototype.createVertex=function(name){
 	var vertex=new Vertex(this.getRandomX(),this.getRandomY(),name);
-
 	this.vertices.push(vertex);
 
 	return vertex;
@@ -255,7 +359,9 @@ Screen.prototype.createGraph=function(){
 	var i=0;
 
 	while(i<n){
-		var vertex=this.createVertex(""+i);
+		var vertex=this.createVertex(this.identifier);
+
+		this.identifier++;
 
 		i++;
 	}
@@ -423,6 +529,8 @@ Screen.prototype.processButtons=function(){
 
 		this.decreaseRadiusButton.resetState();
 	}
+
+
 }
 
 Screen.prototype.iterate=function(){
@@ -464,7 +572,7 @@ Screen.prototype.drawControlPanel=function(){
 	this.context.fillText("Degree: "+this.degree, this.degreeBase, 25);
 	this.context.fillText("Damping: "+this.damping, this.dampingBase, 25);
 	this.context.fillText("Vertex radius: "+this.vertexRadius, this.radiusBase, 25);
-	this.context.fillText("Arc length: "+this.arcLength, this.arcBase, 25);
+	this.context.fillText("Edge length: "+this.arcLength, this.arcBase, 25);
 
 	this.context.fillText("Display: "+this.canvas.width+","+this.canvas.height+" Origin: "+this.originX+","+this.originY, 10, this.canvas.height-6);
 	this.context.fillText("Frames per second: "+this.actualRate,this.canvas.width-200, this.canvas.height-6);

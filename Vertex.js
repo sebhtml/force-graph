@@ -119,12 +119,17 @@ Vertex.prototype.printArcs=function(){
 	}
 }
 
-Vertex.prototype.handleMouseDown=function(x,y,radius){
-	
+Vertex.prototype.isInside=function(x,y,radius){
+
 	var dx=x-this.x;
 	var dy=y-this.y;
+	
+	return (dx*dx+dy*dy <= radius*radius);
+}
 
-	if(dx*dx+dy*dy <= radius*radius){
+Vertex.prototype.handleMouseDown=function(x,y,radius){
+
+	if(this.isInside(x,y,radius)){
 		//console.log(this.name+" follows");
 		this.followMouse=true;
 
@@ -165,4 +170,16 @@ Vertex.prototype.handleMouseMove=function(x,y){
 
 	return false;
 
+}
+
+Vertex.prototype.removeArc=function(vertex){
+	var newArcs=new Array();
+
+	for(i in this.arcs){
+		var candidate=this.arcs[i];
+		if(candidate.getName()!=vertex.getName()){
+			newArcs.push(candidate);
+		}
+	}
+	this.arcs=newArcs;
 }
