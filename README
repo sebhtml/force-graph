@@ -5,3 +5,24 @@ It uses Coulomb's law for repulsion
 and 
 
 Hooke's law for attraction.
+
+== Demo ==
+
+http://sebhtml.github.com/force-graph/
+
+
+== How to create a github page ===
+
+godzilla ] git branch -a
+* master
+  remotes/origin/master
+
+godzilla ] git symbolic-ref "refs/heads/gh-pages" "refs/heads/master"
+godzilla ] git branch -a
+
+  gh-pages -> master
+* master
+  remotes/origin/master
+
+godzilla ] git push --mirror
+
