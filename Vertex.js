@@ -2,12 +2,10 @@
 /* the code is GPL */
 /* author: Sébastien Boisvert */
 
-function Vertex(x,y,radius,name){
+function Vertex(x,y,name){
 	this.x=x;
 	this.y=y;
 	this.name=name;
-
-	this.radius=radius;
 
 	this.velocityX=0;
 	this.velocityY=0;
@@ -46,7 +44,7 @@ Vertex.prototype.getColor=function(){
 	return color;
 }
 
-Vertex.prototype.draw=function(context,originX,originY){
+Vertex.prototype.draw=function(context,originX,originY,radius){
 
 	context.fillStyle = this.getColor();
 
@@ -55,7 +53,7 @@ Vertex.prototype.draw=function(context,originX,originY){
 
 	context.beginPath();
 
-	context.arc(this.x-originX,this.y-originY, this.radius, 0, Math.PI*2, true);
+	context.arc(this.x-originX,this.y-originY,radius, 0, Math.PI*2, true);
 	context.closePath();
 	context.fill();
 	context.stroke();
@@ -121,12 +119,12 @@ Vertex.prototype.printArcs=function(){
 	}
 }
 
-Vertex.prototype.handleMouseDown=function(x,y){
+Vertex.prototype.handleMouseDown=function(x,y,radius){
 	
 	var dx=x-this.x;
 	var dy=y-this.y;
 
-	if(dx*dx+dy*dy <= this.radius*this.radius){
+	if(dx*dx+dy*dy <= radius*radius){
 		//console.log(this.name+" follows");
 		this.followMouse=true;
 

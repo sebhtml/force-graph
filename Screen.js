@@ -62,55 +62,72 @@ function Screen(){
 
 	this.buttons=new Array();
 
-	this.timeControlButton=new Button(60,35,90,50,"time",true);
+	this.timeControlButton=new Button(30,35,40,50,"time",true);
 	this.buttons.push(this.timeControlButton);
+	
+	this.repulsionBase=280;
+	this.attractionBase=180;
+	this.typeBase=470;
+	this.verticesBase=560;
+	this.resetBase=80;
+	this.degreeBase=640;
+	this.dampingBase=380;
+	this.radiusBase=720;
+	this.arcBase=840;
 
-	this.repulsionBase=270;
-	this.attractionBase=370;
-	this.typeBase=500;
-	this.verticesBase=590;
-	this.degreeBase=680;
-	this.dampingBase=780;
-	this.resetBase=220;
+	var smallButtonWidth=20;
 
-	this.showArcsButton=new Button(150,20,60,20,"arcs",true);
+	this.showArcsButton=new Button(140,20,60,20,"arcs",true);
 	this.buttons.push(this.showArcsButton);
 
-	this.showVerticesButton=new Button(150,50,60,20,"vertices",true);
+	this.showVerticesButton=new Button(140,50,60,20,"vertices",true);
 	this.buttons.push(this.showVerticesButton);
 
-	this.increaseRepulsionButton=new Button(this.repulsionBase+60,45,30,20,"+",false);
+	this.increaseRepulsionButton=new Button(this.repulsionBase+40,45,smallButtonWidth,smallButtonWidth,"+",false);
 	this.buttons.push(this.increaseRepulsionButton);
 
-	this.decreaseRepulsionButton=new Button(this.repulsionBase+20,45,30,20,"-",false);
+	this.decreaseRepulsionButton=new Button(this.repulsionBase+20,45,smallButtonWidth,smallButtonWidth,"-",false);
 	this.buttons.push(this.decreaseRepulsionButton);
 
-	this.increaseAttractionButton=new Button(this.attractionBase+60,45,30,20,"+",false);
+	this.increaseAttractionButton=new Button(this.attractionBase+40,45,smallButtonWidth,smallButtonWidth,"+",false);
 	this.buttons.push(this.increaseAttractionButton);
 
-	this.decreaseAttractionButton=new Button(this.attractionBase+20,45,30,20,"-",false);
+	this.decreaseAttractionButton=new Button(this.attractionBase+20,45,smallButtonWidth,smallButtonWidth,"-",false);
 	this.buttons.push(this.decreaseAttractionButton);
 
-	this.resetButton=new Button(this.resetBase,45,60,30,"reset",false);
+	this.resetButton=new Button(this.resetBase,45,40,30,"reset",false);
 	this.buttons.push(this.resetButton);
 
-	this.increaseTypeButton=new Button(this.typeBase+60,45,30,20,"+",false);
+	this.increaseTypeButton=new Button(this.typeBase+40,45,smallButtonWidth,smallButtonWidth,"+",false);
 	this.buttons.push(this.increaseTypeButton);
 
-	this.decreaseTypeButton=new Button(this.typeBase+20,45,30,20,"-",false);
+	this.decreaseTypeButton=new Button(this.typeBase+20,45,smallButtonWidth,smallButtonWidth,"-",false);
 	this.buttons.push(this.decreaseTypeButton);
 
-	this.increaseVerticesButton=new Button(this.verticesBase+60,45,30,20,"+",false);
+	this.increaseVerticesButton=new Button(this.verticesBase+40,45,smallButtonWidth,smallButtonWidth,"+",false);
 	this.buttons.push(this.increaseVerticesButton);
 
-	this.decreaseVerticesButton=new Button(this.verticesBase+20,45,30,20,"-",false);
+	this.decreaseVerticesButton=new Button(this.verticesBase+20,45,smallButtonWidth,smallButtonWidth,"-",false);
 	this.buttons.push(this.decreaseVerticesButton);
 
-	this.increaseDegreeButton=new Button(this.degreeBase+60,45,30,20,"+",false);
+	this.increaseDegreeButton=new Button(this.degreeBase+40,45,smallButtonWidth,smallButtonWidth,"+",false);
 	this.buttons.push(this.increaseDegreeButton);
 
-	this.decreaseDegreeButton=new Button(this.degreeBase+20,45,30,20,"-",false);
+	this.decreaseDegreeButton=new Button(this.degreeBase+20,45,smallButtonWidth,smallButtonWidth,"-",false);
 	this.buttons.push(this.decreaseDegreeButton);
+
+	this.increaseArcButton=new Button(this.arcBase+40,45,smallButtonWidth,smallButtonWidth,"+",false);
+	this.buttons.push(this.increaseArcButton);
+
+	this.decreaseArcButton=new Button(this.arcBase+20,45,smallButtonWidth,smallButtonWidth,"-",false);
+	this.buttons.push(this.decreaseArcButton);
+
+	this.increaseRadiusButton=new Button(this.radiusBase+40,45,smallButtonWidth,smallButtonWidth,"+",false);
+	this.buttons.push(this.increaseRadiusButton);
+
+	this.decreaseRadiusButton=new Button(this.radiusBase+20,45,smallButtonWidth,smallButtonWidth,"-",false);
+	this.buttons.push(this.decreaseRadiusButton);
+
 
 	this.lastUpdate=0;
 	this.start();
@@ -162,7 +179,7 @@ Screen.prototype.handleMouseDown=function(eventObject){
 	}
 
 	for(i in this.vertices){
-		if(this.vertices[i].handleMouseDown(position[0]+this.originX,position[1]+this.originY)){
+		if(this.vertices[i].handleMouseDown(position[0]+this.originX,position[1]+this.originY,this.vertexRadius)){
 			//eventObject.target.style.cursor="pointer";
 			return;
 		}
@@ -216,7 +233,7 @@ Screen.prototype.printGraph=function(){
 }
 
 Screen.prototype.createVertex=function(name){
-	var vertex=new Vertex(this.getRandomX(),this.getRandomY(),this.vertexRadius,name);
+	var vertex=new Vertex(this.getRandomX(),this.getRandomY(),name);
 
 	this.vertices.push(vertex);
 
@@ -370,6 +387,42 @@ Screen.prototype.processButtons=function(){
 		}
 		this.decreaseDegreeButton.resetState();
 	}
+
+	if(this.increaseArcButton.getState()){
+		this.arcLength+=10;
+
+		this.increaseArcButton.resetState();
+	}
+
+	if(this.decreaseArcButton.getState()){
+		if(this.arcLength!=0){
+			this.arcLength-=10;
+		}
+
+		this.decreaseArcButton.resetState();
+
+		while(this.arcLength < 2.5*this.vertexRadius){
+			this.vertexRadius-=10;
+		}
+	}
+
+	if(this.increaseRadiusButton.getState()){
+		this.vertexRadius+=10;
+
+		this.increaseRadiusButton.resetState();
+
+		while(this.arcLength < 2.5*this.vertexRadius){
+			this.arcLength+=10;
+		}
+	}
+
+	if(this.decreaseRadiusButton.getState()){
+		if(this.vertexRadius!=0){
+			this.vertexRadius-=10;
+		}
+
+		this.decreaseRadiusButton.resetState();
+	}
 }
 
 Screen.prototype.iterate=function(){
@@ -410,6 +463,9 @@ Screen.prototype.drawControlPanel=function(){
 	this.context.fillText("Vertices: "+this.n, this.verticesBase, 25);
 	this.context.fillText("Degree: "+this.degree, this.degreeBase, 25);
 	this.context.fillText("Damping: "+this.damping, this.dampingBase, 25);
+	this.context.fillText("Vertex radius: "+this.vertexRadius, this.radiusBase, 25);
+	this.context.fillText("Arc length: "+this.arcLength, this.arcBase, 25);
+
 	this.context.fillText("Display: "+this.canvas.width+","+this.canvas.height+" Origin: "+this.originX+","+this.originY, 10, this.canvas.height-6);
 	this.context.fillText("Frames per second: "+this.actualRate,this.canvas.width-200, this.canvas.height-6);
 }
@@ -445,9 +501,8 @@ Screen.prototype.draw=function(){
 Screen.prototype.drawVertices=function(){
 	for(i in this.vertices){
 		var vertex=this.vertices[i];
-		vertex.draw(this.context,this.originX,this.originY);
+		vertex.draw(this.context,this.originX,this.originY,this.vertexRadius);
 	}
-
 }
 
 Screen.prototype.drawArcs=function(){
