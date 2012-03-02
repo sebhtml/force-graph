@@ -1,0 +1,7 @@
+This is a force-directed graph viewer.
+
+It uses Coulomb's law for repulsion 
+
+and 
+
+Hooke's law for attraction.
