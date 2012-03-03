@@ -138,6 +138,12 @@ Screen.prototype.createButtons=function(){
 	this.decreaseRadiusButton=new Button(this.radiusBase+20,45,smallButtonWidth,smallButtonWidth,"-",false);
 	this.buttons.push(this.decreaseRadiusButton);
 
+	this.increaseDampingButton=new Button(this.dampingBase+40,45,smallButtonWidth,smallButtonWidth,"+",false);
+	this.buttons.push(this.increaseDampingButton);
+
+	this.decreaseDampingButton=new Button(this.dampingBase+20,45,smallButtonWidth,smallButtonWidth,"-",false);
+	this.buttons.push(this.decreaseDampingButton);
+
 	this.addVertexButton=new Button(950+40,25,100,smallButtonWidth,"add vertex",false);
 	this.buttons.push(this.addVertexButton);
 
@@ -535,7 +541,21 @@ Screen.prototype.processButtons=function(){
 		this.decreaseRadiusButton.resetState();
 	}
 
+	if(this.increaseDampingButton.getState()){
+		if(this.damping<1){
+			this.damping+=0.1;
+		}
+		this.increaseDampingButton.resetState();
+		this.damping=this.roundNumber(this.damping,2);
+	}
 
+	if(this.decreaseDampingButton.getState()){
+		if(this.damping>0){
+			this.damping-=0.1;
+		}
+		this.decreaseDampingButton.resetState();
+		this.damping=this.roundNumber(this.damping,2);
+	}
 }
 
 Screen.prototype.iterate=function(){
