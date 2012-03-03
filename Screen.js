@@ -155,7 +155,10 @@ Screen.prototype.createButtons=function(){
 Screen.prototype.start=function(){
 	
 	this.vertexSelected=null;
-	this.lastUpdate=0;
+	this.lastUpdate=this.getMilliseconds();
+	this.frames=0;
+	this.milliseconds=0;
+	this.actualRate=0;
 	this.identifier=0;
 
 	this.moveOrigin=false;
@@ -537,18 +540,29 @@ Screen.prototype.processButtons=function(){
 
 Screen.prototype.iterate=function(){
 	
-	var before=new Date()*1;
+	var start=this.getMilliseconds();
 
 	this.applyForces();
 	this.moveObjects();
 	this.draw();
 
-	var milliSeconds=new Date()*1 -before;
+	this.frames++;
+
+	var milliseconds=this.getMilliseconds();
 	
-	if(before> this.lastUpdate+100){
-		this.actualRate=Math.floor(1000/milliSeconds);
-		this.lastUpdate=before;
+	this.milliseconds+=(milliseconds-start);
+
+	if(milliseconds>= this.lastUpdate+1000){
+		this.actualRate=this.roundNumber(this.frames*1000/(milliseconds- this.lastUpdate),2);
+		this.granularity=this.roundNumber(this.milliseconds/this.frames,2);
+		this.lastUpdate=milliseconds;
+		this.frames=0;
+		this.milliseconds=0;
 	}
+}
+
+Screen.prototype.getMilliseconds=function(){
+	return new Date()*1;
 }
 
 Screen.prototype.moveObjects=function(){
@@ -577,7 +591,7 @@ Screen.prototype.drawControlPanel=function(){
 	this.context.fillText("Edge length: "+this.arcLength, this.arcBase, 25);
 
 	this.context.fillText("Display: "+this.canvas.width+","+this.canvas.height+" Origin: "+this.originX+","+this.originY, 10, this.canvas.height-6);
-	this.context.fillText("Frames per second: "+this.actualRate,this.canvas.width-200, this.canvas.height-6);
+	this.context.fillText("Frames per second: "+this.actualRate+" Granularity: "+this.granularity+" ms",this.canvas.width-300, this.canvas.height-6);
 }
 
 Screen.prototype.draw=function(){
