@@ -37,7 +37,7 @@ Grid.prototype.addEntry=function(key,centerX,centerY,width,height){
 		var cell=cells[i];
 		cell[key]=4096;
 
-		console.log("Added "+key);
+		//console.log("Added "+key);
 		keyCells.push(cell);
 	}
 

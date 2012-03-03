@@ -3,8 +3,11 @@
 /* author: Sébastien Boisvert */
 
 
-
 function Screen(){
+	this.gameFrequency=gameFrequency;
+
+	this.gameFrameLength=Math.floor(1000/this.gameFrequency);
+
 	this.canvas=document.createElement("canvas");
 
 	this.canvas.style.position="relative";
@@ -164,9 +167,6 @@ Screen.prototype.start=function(){
 
 	this.vertexSelected=null;
 	this.lastUpdate=this.getMilliseconds();
-	this.frames=0;
-	this.milliseconds=0;
-	this.actualRate=0;
 	this.identifier=0;
 
 	this.moveOrigin=false;
@@ -180,6 +180,13 @@ Screen.prototype.start=function(){
 	this.lastMouseY=0;
 
 	this.createGraph();
+
+	this.gameMilliseconds=0;
+	this.gameFrames=0;
+	this.actualGameFrequency=0;
+	this.actualGameFrameLength=0;
+
+
 }
 
 Screen.prototype.handleMouseMove=function(eventObject){
@@ -242,6 +249,9 @@ Screen.prototype.handleMouseDown=function(eventObject){
 				var newTable=new Array();
 
 				for(j in this.vertices){
+					if(!this.useGrid){
+						break;
+					}
 					this.grid.removeEntry(j);
 				}
 
@@ -259,7 +269,9 @@ Screen.prototype.handleMouseDown=function(eventObject){
 				for(j in this.vertices){
 					var vertex=this.vertices[i];
 
-					this.grid.addEntry(i,vertex.getX(),vertex.getY(),scale,scale);
+					if(this.useGrid){
+						this.grid.addEntry(i,vertex.getX(),vertex.getY(),scale,scale);
+					}
 				}
 
 
@@ -578,23 +590,22 @@ Screen.prototype.iterate=function(){
 	
 	var start=this.getMilliseconds();
 
+	if(start>= this.lastUpdate+1000){
+		this.actualGameFrequency=this.roundNumber(this.gameFrames*1000/(start-this.lastUpdate),2);
+		this.actualGameFrameLength=this.roundNumber(this.gameMilliseconds/this.gameFrames,2);
+		this.gameMilliseconds=0;
+		this.gameFrames=0;
+
+		this.lastUpdate=start;
+	}
+
 	this.applyForces();
 	this.moveObjects();
-	this.draw();
 
-	this.frames++;
+	var end=this.getMilliseconds();
+	this.gameMilliseconds+=(end-start);
 
-	var milliseconds=this.getMilliseconds();
-	
-	this.milliseconds+=(milliseconds-start);
-
-	if(milliseconds>= this.lastUpdate+1000){
-		this.actualRate=this.roundNumber(this.frames*1000/(milliseconds- this.lastUpdate),2);
-		this.granularity=this.roundNumber(this.milliseconds/this.frames,2);
-		this.lastUpdate=milliseconds;
-		this.frames=0;
-		this.milliseconds=0;
-	}
+	this.gameFrames++;
 }
 
 Screen.prototype.getMilliseconds=function(){
@@ -611,10 +622,13 @@ Screen.prototype.moveObjects=function(){
 		vertex.update(this.timeStep,this.timeControlButton.getState());
 
 		var scale=this.range*this.vertexRadius;
-		this.grid.removeEntry(i);
 
-		//console.log("vertices "+this.vertices.length+" i= "+i+" name= "+vertex.getName());
-		this.grid.addEntry(i,vertex.getX(),vertex.getY(),scale,scale);
+		if(this.useGrid){
+			this.grid.removeEntry(i);
+
+			//console.log("vertices "+this.vertices.length+" i= "+i+" name= "+vertex.getName());
+			this.grid.addEntry(i,vertex.getX(),vertex.getY(),scale,scale);
+		}
 
 		i++;
 	}
@@ -636,8 +650,15 @@ Screen.prototype.drawControlPanel=function(){
 	this.context.fillText("Vertex radius: "+this.vertexRadius, this.radiusBase, 25);
 	this.context.fillText("Edge length: "+this.arcLength, this.arcBase, 25);
 
+	var offset=400;
 	this.context.fillText("Display: "+this.canvas.width+","+this.canvas.height+" Origin: "+this.originX+","+this.originY, 10, this.canvas.height-6);
-	this.context.fillText("Frames per second: "+this.actualRate+" Granularity: "+this.granularity+" ms",this.canvas.width-300, this.canvas.height-6);
+
+	this.context.fillText("Game FPS: "+this.actualGameFrequency+" (target: "+this.gameFrequency+") Game slice: "+this.actualGameFrameLength+
+		" ms (max. allowed: "+this.gameFrameLength+")",this.canvas.width-offset, this.canvas.height-7);
+/*
+	this.context.fillText("Rendering FPS: "+this.actualDisplayFrequency+" (target: "+this.displayFrequency+") Rendering slice: "+this.actualDisplayFrameLength+
+		" ms (max. allowed: "+this.displayFrameLength+" )",this.canvas.width-offset, this.canvas.height-6);
+*/
 }
 
 Screen.prototype.draw=function(){
