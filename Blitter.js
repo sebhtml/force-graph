@@ -3,7 +3,7 @@
 /* author: Sébastien Boisvert */
 
 function Blitter(){
-	this.showBlits=true;
+	this.showBlits=false;
 	this.debug=false;
 
 	/* set to true to have framed blits */
