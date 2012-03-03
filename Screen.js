@@ -30,7 +30,8 @@ function Screen(){
 	this.springConstant=0.05;
 	this.arcLength=100;
 
-
+	this.range=5;
+	this.useGrid=false;
 	/* velocity update */
 	this.timeStep=1;
 	this.damping=0.5;
@@ -61,7 +62,6 @@ function Screen(){
 	this.canvas.addEventListener("mousedown",handleMouseDown,false);
 	this.canvas.addEventListener("mouseup",handleMouseUp,false);
 	this.canvas.addEventListener("mousemove",handleMouseMove,false);
-
 
 	this.createButtons();
 
@@ -160,6 +160,8 @@ Screen.prototype.createButtons=function(){
 
 Screen.prototype.start=function(){
 	
+	this.grid=new Grid(100);
+
 	this.vertexSelected=null;
 	this.lastUpdate=this.getMilliseconds();
 	this.frames=0;
@@ -240,12 +242,26 @@ Screen.prototype.handleMouseDown=function(eventObject){
 				var newTable=new Array();
 
 				for(j in this.vertices){
+					this.grid.removeEntry(j);
+				}
+
+				for(j in this.vertices){
 					if(vertexToCheck.getName()!=this.vertices[j].getName()){
 						newTable.push(this.vertices[j]);
 					}
 				}
 
+
 				this.vertices=newTable;
+
+				var scale=this.range*this.vertexRadius;
+
+				for(j in this.vertices){
+					var vertex=this.vertices[i];
+
+					this.grid.addEntry(i,vertex.getX(),vertex.getY(),scale,scale);
+				}
+
 
 				for(j in this.vertices){
 					this.vertices[j].removeArc(vertexToCheck);
@@ -587,10 +603,20 @@ Screen.prototype.getMilliseconds=function(){
 
 Screen.prototype.moveObjects=function(){
 	// move objects
-	for(i in this.vertices){
-		var vertex=this.vertices[i];
 
+	var i=0;
+	while(i<this.vertices.length){
+		var vertex=this.vertices[i];
+		
 		vertex.update(this.timeStep,this.timeControlButton.getState());
+
+		var scale=this.range*this.vertexRadius;
+		this.grid.removeEntry(i);
+
+		//console.log("vertices "+this.vertices.length+" i= "+i+" name= "+vertex.getName());
+		this.grid.addEntry(i,vertex.getX(),vertex.getY(),scale,scale);
+
+		i++;
 	}
 }
 
@@ -671,20 +697,40 @@ Screen.prototype.drawArcs=function(){
  */
 Screen.prototype.applyForces=function(){
 
-	for(i in this.vertices){
+	var i=0;
+
+	while(i<this.vertices.length){
 		var force=[0,0];
 
 		var vertex1=this.vertices[i];
-		for(j in this.vertices){
+
+		var hits=this.vertices;
+
+		if(this.useGrid){
+			hits=this.grid.getEntries(vertex1.getX(),vertex1.getY(),this.range*this.vertexRadius,this.range*this.vertexRadius);
+		}
+
+		var k=0;
+		//console.log("Self= "+i);
+		while(this.forceConstant!=0 && k<hits.length){
+			var j=k;
+			if(this.useGrid){
+				var j=hits[k];
+			}
+
 			if(i==j){
+				k++;
 				continue;
 			}
 
+			//console.log("self= "+i+" hit= "+j);
 			var vertex2=this.vertices[j];
 
 			var force2=this.getRepulsionForce(vertex1,vertex2);
 
 			force=this.addForces(force,force2);
+		
+			k++;
 		}
 
 		var arcs=vertex1.getArcs();
@@ -700,6 +746,8 @@ Screen.prototype.applyForces=function(){
 		}
 
 		vertex1.updateVelocity(this.timeStep,force,this.damping);
+
+		i++;
 	}
 
 }
