@@ -186,7 +186,10 @@ Screen.prototype.start=function(){
 	this.actualGameFrequency=0;
 	this.actualGameFrameLength=0;
 
-
+	this.drawingMilliseconds=0;
+	this.drawingFrames=0;
+	this.actualDrawingFrequency=0;
+	this.actualDrawingFrameLength=0;
 }
 
 Screen.prototype.handleMouseMove=function(eventObject){
@@ -596,6 +599,11 @@ Screen.prototype.iterate=function(){
 		this.gameMilliseconds=0;
 		this.gameFrames=0;
 
+		this.actualDrawingFrequency=this.roundNumber(this.drawingFrames*1000/(start-this.lastUpdate),2);
+		this.actualDrawingFrameLength=this.roundNumber(this.drawingMilliseconds/this.drawingFrames,2);
+		this.drawingMilliseconds=0;
+		this.drawingFrames=0;
+
 		this.lastUpdate=start;
 	}
 
@@ -650,19 +658,21 @@ Screen.prototype.drawControlPanel=function(){
 	this.context.fillText("Vertex radius: "+this.vertexRadius, this.radiusBase, 25);
 	this.context.fillText("Edge length: "+this.arcLength, this.arcBase, 25);
 
-	var offset=400;
+	var offset=300;
 	this.context.fillText("Display: "+this.canvas.width+","+this.canvas.height+" Origin: "+this.originX+","+this.originY, 10, this.canvas.height-6);
 
-	this.context.fillText("Game FPS: "+this.actualGameFrequency+" (target: "+this.gameFrequency+") Game slice: "+this.actualGameFrameLength+
-		" ms (max. allowed: "+this.gameFrameLength+")",this.canvas.width-offset, this.canvas.height-7);
-/*
-	this.context.fillText("Rendering FPS: "+this.actualDisplayFrequency+" (target: "+this.displayFrequency+") Rendering slice: "+this.actualDisplayFrameLength+
-		" ms (max. allowed: "+this.displayFrameLength+" )",this.canvas.width-offset, this.canvas.height-6);
-*/
+	this.context.fillText("Frequency: "+this.gameFrequency+" Game frame: "+this.gameFrameLength,this.canvas.width-offset, this.canvas.height-34);
+
+	this.context.fillText("Game FPS: "+this.actualGameFrequency+" Game frame: "+this.actualGameFrameLength+
+		" ms",this.canvas.width-offset, this.canvas.height-20);
+	this.context.fillText("Rendering FPS: "+this.actualDrawingFrequency+" Rendering slice: "+this.actualDrawingFrameLength+
+		" ms",this.canvas.width-offset, this.canvas.height-6);
 }
 
 Screen.prototype.draw=function(){
 	
+	var start=this.getMilliseconds();
+
 	var context=this.context;
 	context.clearRect(0,0,this.canvas.width,this.canvas.height);
 
@@ -687,6 +697,11 @@ Screen.prototype.draw=function(){
 	}
 
 	this.drawControlPanel();
+
+	var end=this.getMilliseconds();
+
+	this.drawingMilliseconds+=(end-start);
+	this.drawingFrames++;
 }
 
 Screen.prototype.drawVertices=function(){
