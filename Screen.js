@@ -7,6 +7,8 @@
 function Screen(){
 	this.canvas=document.createElement("canvas");
 
+	this.canvas.style.position="relative";
+
 	var body=document.getElementsByTagName("body")[0];
 	var center=document.createElement("center");
 	center.appendChild(this.canvas);
@@ -214,7 +216,7 @@ Screen.prototype.handleMouseDown=function(eventObject){
 	}
 
 	if(this.addVertexButton.getState()){
-		var vertex=new Vertex(position[0],position[1],this.identifier);
+		var vertex=new Vertex(position[0]+this.originX,position[1]+this.originY,this.identifier);
 		this.vertices.push(vertex);
 
 		this.identifier++;

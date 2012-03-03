@@ -1,0 +1,41 @@
+Operating system: Microsoft Windows 7 Home Premium
+Web browser: Microsoft Internet Explorer 9.0.8112.16421 
+Frames per second: 500 frames per second
+Comment: everything works
+
+Operating system: Microsoft Windows 7 Home Premium
+Web browser: Mozilla Firefox 10.0.2
+Frames per second: 250
+Comment: everything works
+
+Operating system: Microsoft Windows 7 Home Premium
+Web browser: Google Chrome 17.0.963.56 m
+Frames per second: 166
+Comment: everything works
+
+Operating system: Ubuntu 11.04 i386
+Web browser: Google Chromium 10.0.648.205 (81283) Ubuntu 11.04
+Frames per second: 142
+Comment: everything works
+
+Operating system: Microsoft Windows 7 Home Premium
+Web browser: Opera 11.61
+Frames per second: 33
+Comment: everything works, slow
+
+Operating system: Ubuntu 11.04 i386
+Web browser: Mozilla Firefox 10.0.2
+Frames per second: 8
+Comment: everything works, slow
+
+Operating system: Ubuntu 11.04 i386
+Web browser: Mozilla Firefox 4.0
+Frames per second: 8
+Comment: everything works, slow
+
+Operating system: Ubuntu 11.04 i386
+Web browser: KDE Konqueror 4.6.2
+Frames per second: 0
+Comment: a few lines are visible, but it does not work
+
+
