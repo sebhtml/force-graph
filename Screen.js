@@ -163,6 +163,7 @@ Screen.prototype.createButtons=function(){
 
 Screen.prototype.start=function(){
 	
+	this.blitter=new Blitter();
 	this.grid=new Grid(100);
 
 	this.vertexSelected=null;
@@ -644,7 +645,7 @@ Screen.prototype.moveObjects=function(){
 
 Screen.prototype.drawControlPanel=function(){
 	for(i in this.buttons){
-		this.buttons[i].draw(this.context);
+		this.buttons[i].draw(this.context,this.blitter);
 	}
 
 	this.context.fillStyle    = '#000000';
@@ -707,7 +708,7 @@ Screen.prototype.draw=function(){
 Screen.prototype.drawVertices=function(){
 	for(i in this.vertices){
 		var vertex=this.vertices[i];
-		vertex.draw(this.context,this.originX,this.originY,this.vertexRadius,this.canvas);
+		vertex.draw(this.context,this.originX,this.originY,this.vertexRadius,this.blitter);
 	}
 }
 

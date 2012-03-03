@@ -36,28 +36,67 @@ Button.prototype.getState=function(){
 	return this.state;
 }
 
-Button.prototype.draw=function(context){
-	context.fillStyle = "rgb(220,220,220)";
-	context.strokeStyle = "rgb(0,0,0)";
+Button.prototype.draw=function(context,blitter){
 
-	if(this.state){
-		context.fillStyle = "rgb(200,250,200)";
+	var key=this.name+"-"+this.width+"-"+this.height+"-"+this.state;
+
+	if(blitter.hasBlit(key)){
+		var blit=blitter.getBlit(key);
+
+		var width=blit.getWidth();
+		var height=blit.getHeight();
+
+		//blit.print();
+
+		context.drawImage(blit.getCanvas(),blit.getX(),blit.getY(),width,height,
+			this.x-width/2,this.y-height/2,width,height);
+
+		return;
 	}
 
-	context.beginPath();
-	context.moveTo(this.x1,this.y1);
-	context.lineTo(this.x2,this.y2);
-	context.lineTo(this.x3,this.y3);
-	context.lineTo(this.x4,this.y4);
-	context.lineTo(this.x1,this.y1);
-	context.fill();
-	context.stroke();
-	context.closePath();
+	var blit=blitter.allocateBlit(key,4+this.width,4+this.height);
 
-	context.fillStyle    = '#000000';
-	context.font         = 'bold 12px sans-serif';
-	context.fillText(this.name, this.x-(this.width/2)*0.7, this.y+6);
+	var context2=blit.getCanvas().getContext("2d");
 
+	var cacheWidth=blit.getWidth();
+	var cacheHeight=blit.getHeight();
+	var x=blit.getX()+cacheWidth/2;
+	var y=blit.getY()+cacheHeight/2;
+
+	context2.fillStyle = "rgb(220,220,220)";
+	context2.strokeStyle = "rgb(0,0,0)";
+
+	if(this.state){
+		context2.fillStyle = "rgb(200,250,200)";
+	}
+
+	var width=this.width;
+	var height=this.height;
+
+	x1=x-width/2;
+	y1=y-height/2;
+	x2=x+width/2;
+	y2=y-height/2;
+	x3=x+width/2;
+	y3=y+height/2;
+	x4=x-width/2;
+	y4=y+height/2;
+
+	context2.beginPath();
+	context2.moveTo(x1,y1);
+	context2.lineTo(x2,y2);
+	context2.lineTo(x3,y3);
+	context2.lineTo(x4,y4);
+	context2.lineTo(x1,y1);
+	context2.fill();
+	context2.stroke();
+	context2.closePath();
+
+	context2.fillStyle    = '#000000';
+	context2.font         = 'bold 12px sans-serif';
+	context2.fillText(this.name, x-(this.width/2)*0.7, y+6);
+
+	this.draw(context,blitter);
 }
 
 Button.prototype.resetState=function(){

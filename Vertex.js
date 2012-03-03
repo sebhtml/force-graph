@@ -16,13 +16,7 @@ function Vertex(x,y,name){
 
 	this.updated=false;
 
-	this.twopi=Math.PI*2;
 	this.canChangeColor=true;
-	this.cacheCanvas=false;
-
-	if(this.cacheCanvas){
-		this.buffers=new Array();
-	}
 }
 
 Vertex.prototype.getColor=function(){
@@ -31,12 +25,13 @@ Vertex.prototype.getColor=function(){
 	}
 	
 	if(!this.canChangeColor){
-		return "rgb(255,255,240)";
+		return "rgb(235,225,240)";
 	}
 
-	var red=Math.floor(10*Math.sqrt(this.velocityX*this.velocityX+this.velocityY*this.velocityY))+150;
-	var green=Math.floor(10*this.velocityX*this.velocityX)+150;
-	var blue=Math.floor(10*this.velocityY*this.velocityY)+150;
+	var seed=Math.floor(10*Math.sqrt(this.velocityX*this.velocityX+this.velocityY*this.velocityY+10));
+	var red=seed+120;
+	var green=seed+150; //Math.floor(10*this.velocityX*this.velocityX)+150;
+	var blue=seed+120; //Math.floor(10*this.velocityY*this.velocityY)+150;
 
 	if(red>255){
 		red=255;
@@ -56,40 +51,38 @@ Vertex.prototype.getColor=function(){
 	return color;
 }
 
-Vertex.prototype.draw=function(context,originX,originY,radius,canvas){
+Vertex.prototype.draw=function(context,originX,originY,radius,blitter){
 
 	var theColor= this.getColor();
+	var key=this.name+"-"+theColor+"-"+radius;
 
-	var key=theColor+radius;
+	if(blitter.hasBlit(key)){
+		var blit=blitter.getBlit(key);
 
-	/* use cached information */
-	if(this.cacheCanvas && key in this.buffers){
-		var buffer=this.buffers[key];
-		context.drawImage(buffer,originX-2*radius+this.x,originY-2*radius+this.y);
+		var width=blit.getWidth();
+		var height=blit.getHeight();
+
+		//blit.print();
+
+		context.drawImage(blit.getCanvas(),blit.getX(),blit.getY(),width,height,
+			this.x-originX-width/2,this.y-originY-height/2,width,height);
+
 		return;
 	}
+	
+	var blit=blitter.allocateBlit(key,4+2*radius,4+2*radius);
 
-	var x=2*radius;
-	var y=2*radius;
+	var context2=blit.getCanvas().getContext("2d");
 
-	if(!this.cacheCanvas){
-		x=this.x-originX;
-		y=this.y-originY;
-	}
-
-	var context2=context;
-	if(this.cacheCanvas){
-		var canvas2=document.createElement('canvas');
-		canvas2.width=canvas.width;
-		canvas2.height=canvas.height;
-
-		context2=canvas2.getContext('2d');
-	}
+	var cacheWidth=blit.getWidth();
+	var x=blit.getX()+cacheWidth/2;
+	var y=blit.getY()+cacheWidth/2;
 
 	context2.beginPath();
 	context2.fillStyle = theColor;
 	context2.strokeStyle = "rgb(0,0,0)";
-	context2.arc(x,y,radius, 0, this.twopi, true);
+	context2.arc(x,y,radius, 0, Math.PI*2, true);
+	
 	context2.fill();
 	context2.stroke();
 	context2.closePath();
@@ -98,11 +91,9 @@ Vertex.prototype.draw=function(context,originX,originY,radius,canvas){
 	context2.font         = 'bold 12px sans-serif';
 	context2.fillText(this.name,x-6,y+6);
 
-	if(this.cacheCanvas){
-		this.buffers[key]=canvas2;
+	console.log("Drawed something.");
 
-		this.draw(context,originX,originY,radius);
-	}
+	this.draw(context,originX,originY,radius,blitter);
 }
 
 Vertex.prototype.getX=function(){
