@@ -91,7 +91,7 @@ Vertex.prototype.draw=function(context,originX,originY,radius,blitter){
 	context2.font         = 'bold 12px sans-serif';
 	context2.fillText(this.name,x-6,y+6);
 
-	console.log("Drawed something.");
+	//console.log("Drawed something.");
 
 	this.draw(context,originX,originY,radius,blitter);
 }
