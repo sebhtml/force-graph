@@ -625,7 +625,7 @@ Screen.prototype.draw=function(){
 Screen.prototype.drawVertices=function(){
 	for(i in this.vertices){
 		var vertex=this.vertices[i];
-		vertex.draw(this.context,this.originX,this.originY,this.vertexRadius);
+		vertex.draw(this.context,this.originX,this.originY,this.vertexRadius,this.canvas);
 	}
 }
 

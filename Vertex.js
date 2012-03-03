@@ -15,9 +15,24 @@ function Vertex(x,y,name){
 	this.followMouse=false;
 
 	this.updated=false;
+
+	this.twopi=Math.PI*2;
+	this.canChangeColor=true;
+	this.cacheCanvas=false;
+
+	if(this.cacheCanvas){
+		this.buffers=new Array();
+	}
 }
 
 Vertex.prototype.getColor=function(){
+	if(this.followMouse){
+		return "rgb(255,255,255)";
+	}
+	
+	if(!this.canChangeColor){
+		return "rgb(255,255,240)";
+	}
 
 	var red=Math.floor(10*Math.sqrt(this.velocityX*this.velocityX+this.velocityY*this.velocityY))+150;
 	var green=Math.floor(10*this.velocityX*this.velocityX)+150;
@@ -37,30 +52,57 @@ Vertex.prototype.getColor=function(){
 
 	var color="rgb("+red+","+green+","+blue+")";
 
-	if(this.followMouse){
-		color = "rgb(255,255,255)";
-	}
-	
+
 	return color;
 }
 
-Vertex.prototype.draw=function(context,originX,originY,radius){
+Vertex.prototype.draw=function(context,originX,originY,radius,canvas){
 
-	context.fillStyle = this.getColor();
+	var theColor= this.getColor();
 
-	
-	context.strokeStyle = "rgb(0,0,0)";
+	var key=theColor+radius;
 
-	context.beginPath();
+	/* use cached information */
+	if(this.cacheCanvas && key in this.buffers){
+		var buffer=this.buffers[key];
+		context.drawImage(buffer,originX-2*radius+this.x,originY-2*radius+this.y);
+		return;
+	}
 
-	context.arc(this.x-originX,this.y-originY,radius, 0, Math.PI*2, true);
-	context.closePath();
-	context.fill();
-	context.stroke();
+	var x=2*radius;
+	var y=2*radius;
 
-	context.fillStyle    = '#000000';
-	context.font         = 'bold 12px sans-serif';
-	context.fillText(this.name, this.x-originX-6, this.y-originY+6);
+	if(!this.cacheCanvas){
+		x=this.x-originX;
+		y=this.y-originY;
+	}
+
+	var context2=context;
+	if(this.cacheCanvas){
+		var canvas2=document.createElement('canvas');
+		canvas2.width=canvas.width;
+		canvas2.height=canvas.height;
+
+		context2=canvas2.getContext('2d');
+	}
+
+	context2.beginPath();
+	context2.fillStyle = theColor;
+	context2.strokeStyle = "rgb(0,0,0)";
+	context2.arc(x,y,radius, 0, this.twopi, true);
+	context2.fill();
+	context2.stroke();
+	context2.closePath();
+
+	context2.fillStyle    = '#000000';
+	context2.font         = 'bold 12px sans-serif';
+	context2.fillText(this.name,x-6,y+6);
+
+	if(this.cacheCanvas){
+		this.buffers[key]=canvas2;
+
+		this.draw(context,originX,originY,radius);
+	}
 }
 
 Vertex.prototype.getX=function(){
